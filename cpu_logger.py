@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 import MacTmp as cpu_temp
 import matplotlib.pyplot as plt
+import numpy as np
 
 def get_cpu_usage():
     return psutil.cpu_percent(interval=0.1)
@@ -32,17 +33,13 @@ def main(log_file):
         except KeyboardInterrupt:
             print("Logging stopped.")
 
-    plt.figure(figsize=(12, 6))
-    plt.plot(timestamps, cpu_usages, label="CPU Usage (%)", marker="o")
-    plt.plot(timestamps, cpu_temperatures, label="CPU Temperature (°C)", marker="o")
-    plt.xlabel("Timestamp")
-    plt.ylabel("Percentage / Temperature")
-    plt.title("CPU Usage and Temperature Over Time")
-    plt.xticks(rotation=45, ha="right")
+    plt.plot(cpu_usages, label="CPU Usage (%)")
+    plt.xlabel("Time (seconds)")
+    plt.ylabel("CPU ")
+    plt.title("CPU Usage Over Time")
     plt.legend()
-    plt.tight_layout()
     plt.grid(True)
-    plt.savefig("cpu_usage_temp_plot.png")
+    plt.savefig("cpu_usage_over_time.png")
     plt.show()
 
 if __name__ == "__main__":
