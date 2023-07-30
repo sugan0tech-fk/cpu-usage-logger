@@ -14,25 +14,15 @@ def get_cpu_temperature():
 def get_current_time():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def main(log_file):
-    timestamps = []
-    cpu_usages = []
-    cpu_temperatures = []
-    with open(log_file, "a") as file:
-        try:
-            while True:
-                cpu_usage = get_cpu_usage()
-                cpu_temperature = get_cpu_temperature()
-                current_time = get_current_time()
-                file.write(f"{current_time},{cpu_usage:.2f}%,{cpu_temperature}°C\n")
-                file.flush()  # Flush the buffer to ensure data is written to the file immediately
-                timestamps.append(current_time)
-                cpu_usages.append(cpu_usage)
-                cpu_temperatures.append(cpu_temperature)
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("Logging stopped.")
+def read_number_from_file():
+    try:
+        with open("hang_time.log", 'r') as file:
+            number = int(file.read())
+            return number
+    finally:
+        return 0
 
+def gen_graph(cpu_usages):
     plt.plot(cpu_usages, label="CPU Usage (%)")
     plt.xlabel("Time (seconds)")
     plt.ylabel("CPU ")
@@ -41,6 +31,36 @@ def main(log_file):
     plt.grid(True)
     plt.savefig("cpu_usage_over_time.png")
     plt.show()
+
+def update_hang_time(hang_time: int):
+    with open("hang_time.log", "w") as file:
+        file.write(str(hang_time + read_number_from_file() ))
+
+
+def log_csv(log_file):
+    timestamps = []
+    cpu_usages = []
+    cpu_temperatures = []
+    hang_time = 0
+    with open(log_file, "a") as file:
+        try:
+            while True:
+                cpu_usage = get_cpu_usage()
+                cpu_temperature = get_cpu_temperature()
+                current_time = get_current_time()
+                file.write(f"{current_time},{cpu_usage:.2f}%,{cpu_temperature}°C\n")
+                if(cpu_usage > 65):
+                    hang_time += 1
+                file.flush()  # Flush the buffer to ensure data is written to the file immediately
+                timestamps.append(current_time)
+                cpu_usages.append(cpu_usage)
+                cpu_temperatures.append(cpu_temperature)
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Logging stopped.")
+
+    gen_graph(cpu_usages)
+    update_hang_time(hang_time)
 
 if __name__ == "__main__":
     import argparse
@@ -72,5 +92,5 @@ if __name__ == "__main__":
         else:
             print("Invalid statistics option.")
     else:
-        main(args.log_file)
+        log_csv(args.log_file)
 
